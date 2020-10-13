@@ -1,5 +1,8 @@
 .git
 .gitignore
 .dockerignore
-apt.conf.d
 README.md
+apt.conf.d
+build.sh
+start.sh
+stop.sh
