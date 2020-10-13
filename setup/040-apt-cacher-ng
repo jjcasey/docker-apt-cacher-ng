@@ -1,0 +1,27 @@
+#! /bin/bash
+
+set -e
+set -x
+
+for a in passwd group shadow ; do
+	cat /tmp/identity/$a >> /etc/$a
+done
+
+mv /usr/sbin/policy-rc.d.disabled /usr/sbin/policy-rc.d
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install apt-cacher-ng
+debconf-communicate apt-cacher-ng <<EOF
+set apt-cacher-ng/bindaddress
+set apt-cacher-ng/cachedir /var/cache/apt-cacher-ng
+set apt-cacher-ng/gentargetmode No automated setup
+set apt-cacher-ng/port 3142
+set apt-cacher-ng/proxy
+set apt-cacher-ng/tunnelenable true
+EOF
+dpkg-reconfigure -fnoninteractive apt-cacher-ng
+apt-get -y -u dist-upgrade
+apt-get clean
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+/usr/local/bin/docker-wipelogs
+
+mv /usr/sbin/policy-rc.d /usr/sbin/policy-rc.d.disabled
